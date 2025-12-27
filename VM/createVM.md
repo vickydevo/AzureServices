@@ -121,6 +121,9 @@ To allow traffic through the Azure platform, you must define a new security rule
 | **Priority** | 310 | Must be lower than the default Deny rule. |
 | **Name** | Allow_8081_Inbound | A descriptive name for the rule. |
 
+<img width="1863" height="848" alt="Image" src="https://github.com/user-attachments/assets/0cb6fd0c-2fbd-4f08-9da7-211e665c9900" />
+
+
 4.  **Save:** Click **Add** and wait for the "Created security rule" notification.
 
 
