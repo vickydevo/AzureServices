@@ -20,8 +20,8 @@ A Resource Group organizes your Azure resources.
     * **Subscription:** Select your subscription.
     * **Resource Group name:** Enter a descriptive name (e.g., `UbuntuStandardGroup`).
     * **Region:** Select the geographical region for your deployment.
----
-    <img width="1327" height="872" alt="Image" src="https://github.com/user-attachments/assets/cb1b0de8-dd5b-4d9b-b927-c0c757841c8e" />
+
+<img width="1327" height="872" alt="Image" src="https://github.com/user-attachments/assets/cb1b0de8-dd5b-4d9b-b927-c0c757841c8e" />
 
 ---
 <img width="1305" height="807" alt="Image" src="https://github.com/user-attachments/assets/4b867463-d098-459e-b869-0e3457d57086" />
@@ -35,28 +35,38 @@ A Resource Group organizes your Azure resources.
 We will navigate the Virtual Machine creation wizard, focusing on standard configuration.
 
 1.  In the Azure portal search bar, type **`Virtual machines`** and select the service.
-2.  Click **`+ Create`**, then select **`Azure virtual machine`**.
+2.  Click **`+ Create`**, then select **`virtual machine`**.
 3.  ### Basics Tab Configuration
     * **Project details:**
-        * **Resource Group:** Select the one created in Step 1 (e.g., `UbuntuStandardGroup`).
+        * **Resource Group:** Select the one created in Step 1 (e.g., `southGroup`).
     * **Instance details:**
         * **Virtual machine name:** (e.g., `MyStandardUbuntuVM`).
         * **Region:** Match the Resource Group region.
         * **Image:** Select **`Ubuntu Server 22.04 LTS`** (or your preferred version).
-        * **Size:** Click **`See all sizes`** and select a size appropriate for your workload (e.g., `Standard_D2s_v5`). **Note:** This selection determines your cost.
+        
+        <img width="931" height="683" alt="Image" src="https://github.com/user-attachments/assets/02a5e194-dcef-4ed6-9d15-c035f1ed1f6c" />
+
+        * **Size:** Click **`See all sizes`** and select a size appropriate for your workload (e.g., `Standard_B2ats_v2 - 2 vcpus,`). **Note:** This selection determines your cost.
+        <img width="962" height="472" alt="Image" src="https://github.com/user-attachments/assets/d9a16ea2-212f-412f-9d83-65b009f49297" />
+
     * **Administrator account:**
-        * **Authentication type:** Choose **`SSH public key`** (recommended).
+        * **Authentication type:** Choose **`azure_ssh`** (recommended).
         * **Username:** (e.g., `ubuntuadmin`).
         * **SSH public key source:** Select **`Generate new key pair`**.
         * **Key pair name:** (e.g., `my-ssh-key`).
+
     * **Inbound port rules:**
         * **Public inbound ports:** Select **`Allow selected ports`**.
         * **Select inbound ports:** Choose **`SSH (22)`** from the dropdown.
+        <img width="965" height="563" alt="Image" src="https://github.com/user-attachments/assets/58161548-653f-4561-b091-f3c5423050aa" />
+
 4.  ### Review and Deployment
     * Click **`Review + create`**.
     * Review the configuration and the estimated hourly cost.
     * Click **`Create`**.
     * When prompted, click **`Download private key and create resource`**. **Save the downloaded `.pem` file securely!**
+
+    <img width="1377" height="591" alt="Image" src="https://github.com/user-attachments/assets/f371f7b9-b96e-4a85-9a04-6f259c7ecec9" />
 
 ---
 
@@ -77,7 +87,54 @@ You need the saved private key (`.pem` file) and the VM's Public IP address to c
         ssh -i /path/to/your/my-ssh-key.pem ubuntuadmin@<Your-Public-IP-Address>
         ```
         * Replace the key path and IP address with your actual values.
+# Azure VM Port Configuration Guide
 
+This document outlines the steps to add and configure an inbound port (8081) for an Azure Virtual Machine.
+
+---
+
+### 3. Update Inbound Rules in NSG
+To allow traffic through the Azure platform, you must define a new security rule within the Network Security Group.
+
+1.  **Locate the NSG:**
+    * Log in to the [Azure Portal](https://portal.azure.com).
+    * Search for **Virtual Machines** in the top search bar and select your VM.
+    * In the left-hand menu, under the **Settings** section, click on **Networking**.
+    * Click the link next to **Network Security Group** to open the configuration page.
+
+2.  **Add the Inbound Rule:**
+    * On the NSG page, select **Inbound security rules** from the left sidebar.
+    * Click the **+ Add** button at the top.
+
+3.  **Configure Rule Details:**
+    Fill in the panel with the following values:
+
+| Field | Value | Description |
+| :--- | :--- | :--- |
+| **Source** | Any | Allows traffic from any source. |
+| **Source port ranges** | * | Allows any source port from the sender. |
+| **Destination** | Any | Targets the VM associated with this NSG. |
+| **Service** | Custom | Allows manual port definition. |
+| **Destination port ranges**| **8081** | The specific port you want to open. |
+| **Protocol** | TCP | Standard protocol for web/app traffic. |
+| **Action** | Allow | Permits the incoming traffic. |
+| **Priority** | 310 | Must be lower than the default Deny rule. |
+| **Name** | Allow_8081_Inbound | A descriptive name for the rule. |
+
+4.  **Save:** Click **Add** and wait for the "Created security rule" notification.
+
+
+
+---
+
+### 4. Configure Guest OS Firewall
+After the Azure platform allows the traffic, you must ensure the internal OS firewall is not blocking the port.
+
+#### For Linux (Ubuntu/Debian)
+```bash
+sudo ufw allow 8081/tcp
+sudo ufw reload
+        
 ---
 
 ## Cost Management and Cleanup
